@@ -1,12 +1,15 @@
 #include <iostream>
 #include <stdlib.h>
 #include<conio.h>
+#include<Windows.h>
 
 using namespace std;
 bool gameover;
 const int width = 20;
 const int height = 20;
 int x, y, fruitx, fruity, score;
+int tailX[100], tailY[100];
+int ntail=0;
 enum edirection { STOP = 0, LEFT , RIGHT , UP , DOWN };
 edirection dir;
 void setup()
@@ -36,7 +39,21 @@ void draw()
 			else if (i == fruity && j == fruitx)
 				cout << "F";
 			else
+			{
+				bool print=false;
+				for (int k = 0; k < ntail; k++)
+				{
+					if (tailX[k] == j && tailY[k] == i)
+					{
+						cout << "o";
+						print = true;
+					
+					}
+					
+				}
+				if(!print)
 				cout << " ";
+			}
 
 			if (j == width - 1)
 				cout << "#";
@@ -76,6 +93,20 @@ void input()
 }
 void logic()
 {
+	int prevx = tailX[0];
+	int prevy = tailY[0];
+	int prev2x, prev2y;
+	tailX[0] = x;
+	tailY[0] = y;
+	for (int i = 1; i < ntail; i++)
+	{
+		prev2x = tailX[i];
+		prev2y = tailY[i];
+		tailX[i] = prevx;
+		tailY[i] = prevy;
+		prevx = prev2x;
+		prevy = prev2y;
+	}
 	switch (dir)
 	{
 	case LEFT:
@@ -93,13 +124,24 @@ void logic()
 	default:
 		break;
 	}
-	if (x > width || x<0 || y>height || y < 0)
-		gameover = true;
+	//if (x > width || x<0 || y>height || y < 0) //snake can't pass through walls
+		//gameover = true;
+	if (x >= width)x = 0;  //snake can pass through walls
+	else if (x < 0) x = width - 1;
+	if (y >= height) y = 0;
+	else if (y < 0)y = height - 1;
+	for (int i = 0; i < ntail; i++)
+	{
+		if (tailX[i] == x && tailY[i] == y)
+			gameover = true;
+	}
 	if (x == fruitx && y == fruity)
 	{
+		
 		score += 10;
 		fruitx = rand() % width;
 		fruity = rand() % height;
+		ntail++;
 
 	}
 
@@ -112,6 +154,7 @@ int main()
 		draw();
 		input();
 		logic();
+		Sleep(50); //to control snake speed
 	}
 	return 0;
 }
